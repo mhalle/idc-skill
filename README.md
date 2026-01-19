@@ -5,7 +5,7 @@ A skill for exploring cancer imaging data from the [Imaging Data Commons (IDC)](
 ## About IDC
 
 The Imaging Data Commons is an NCI Cancer Research Data Commons resource providing access to:
-- **965,000+ DICOM series** across **161 collections**
+- **965,000+ DICOM series** across **160+ collections**
 - Cancer imaging from major research initiatives (TCGA, NLST, LIDC-IDRI, and more)
 - Multiple modalities: CT, MRI, PET, pathology slides, and derived analysis results
 - Clinical, genomic, and histopathology supporting data
