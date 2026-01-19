@@ -20,12 +20,12 @@ cp -r idc-skill ~/.claude/skills/
 
 ### Claude Platform
 
-1. Zip the skill folder:
+1. Zip the skill folder (skill zipfiles typically use the `.skill` extension):
    ```bash
-   zip -r idc-skill.zip idc-skill
+   zip -r idc-skill.skill idc-skill
    ```
 
-2. Upload `idc-skill.zip` through the Claude platform skill installation interface.
+2. Upload `idc-skill.skill` through the Claude platform skill installation interface.
 
 ## Usage
 
