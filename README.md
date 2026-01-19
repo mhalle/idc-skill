@@ -4,28 +4,57 @@ A skill for exploring cancer imaging data from the Imaging Data Commons (IDC).
 
 ## Installation
 
+### Download from GitHub Releases
+
+The latest release is always available at:
+```
+https://github.com/mhalle/idc-skill/releases/latest/download/idc-skill.skill
+```
+
+Versioned releases are also available:
+```
+https://github.com/mhalle/idc-skill/releases/download/v0.1.0/idc-skill-v0.1.0.skill
+```
+
 ### Claude Code
 
-Copy the `idc-skill` folder to your `.claude/skills/` directory:
+Download and extract to your `.claude/skills/` directory:
 
 **Project-level** (applies to a specific project):
 ```bash
-cp -r idc-skill /path/to/your/project/.claude/skills/
+curl -L https://github.com/mhalle/idc-skill/releases/latest/download/idc-skill.skill -o idc-skill.zip
+unzip idc-skill.zip -d /path/to/your/project/.claude/skills/
 ```
 
 **User-level** (applies globally):
 ```bash
-cp -r idc-skill ~/.claude/skills/
+curl -L https://github.com/mhalle/idc-skill/releases/latest/download/idc-skill.skill -o idc-skill.zip
+unzip idc-skill.zip -d ~/.claude/skills/
+```
+
+Or clone the repository directly:
+```bash
+git clone https://github.com/mhalle/idc-skill.git ~/.claude/skills/idc-skill
 ```
 
 ### Claude Platform
 
-1. Zip the skill folder (skill zipfiles typically use the `.skill` extension):
-   ```bash
-   zip -r idc-skill.skill idc-skill
-   ```
+1. Download the latest `.skill` file from [GitHub Releases](https://github.com/mhalle/idc-skill/releases/latest)
 
 2. Upload `idc-skill.skill` through the Claude platform skill installation interface.
+
+## Checking for Updates
+
+The installed skill version is stored in the `metadata.version` field of `SKILL.md`.
+
+To check for updates, compare your installed version against the latest release:
+
+```bash
+# Get latest release version from GitHub
+curl -s https://api.github.com/repos/mhalle/idc-skill/releases/latest | grep '"tag_name"'
+```
+
+**Note:** Automatic version checking requires platform support. The skill includes its version in the frontmatter metadata, but discovering the installed version programmatically depends on the host environment's capabilities.
 
 ## Usage
 
@@ -43,3 +72,21 @@ You can also invoke it directly with `/idc-skill`.
 - `SKILL.md` - Main skill instructions and workflows
 - `references/schema_reference.md` - Database schema documentation
 - `references/query_patterns.md` - SQL query examples
+
+## Developer
+
+### Releasing a New Version
+
+The version number in `SKILL.md` (under `metadata.version`) must be kept in sync with the git tag.
+
+When releasing:
+
+1. Update `metadata.version` in `SKILL.md` to match the new version
+2. Commit the change
+3. Create a matching git tag (with `v` prefix):
+   ```bash
+   git tag v0.2.0
+   git push origin v0.2.0
+   ```
+
+The GitHub Actions workflow will automatically package and publish the `.skill` files when a tag is pushed.
