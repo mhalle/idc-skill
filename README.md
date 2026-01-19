@@ -56,6 +56,8 @@ curl -s https://api.github.com/repos/mhalle/idc-skill/releases/latest | grep '"t
 
 **Note:** Automatic version checking requires platform support. The skill includes its version in the frontmatter metadata, but discovering the installed version programmatically depends on the host environment's capabilities.
 
+See [references/updating.md](references/updating.md) for detailed update procedures.
+
 ## Usage
 
 Once installed, the skill is triggered automatically when you ask about:
@@ -72,6 +74,7 @@ You can also invoke it directly with `/idc-skill`.
 - `SKILL.md` - Main skill instructions and workflows
 - `references/schema_reference.md` - Database schema documentation
 - `references/query_patterns.md` - SQL query examples
+- `references/updating.md` - Detailed update procedures for different platforms
 
 ## Developer
 
