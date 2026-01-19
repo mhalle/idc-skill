@@ -56,12 +56,10 @@ See [references/updating.md](references/updating.md) for detailed update procedu
 
 ## Usage
 
-Once installed, the skill is triggered automatically when you ask about:
-- IDC collections or datasets
-- Cancer imaging data
-- DICOM series queries
-- CT, MR, PET scans
-- Medical imaging metadata
+Once installed, the skill is triggered automatically when you mention:
+- IDC
+- Imaging Data Commons
+- IDC collections
 
 You can also invoke it directly with `/idc-skill`.
 

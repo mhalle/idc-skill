@@ -1,6 +1,6 @@
 ---
 name: idc-skill
-description: This skill should be used when exploring cancer imaging data from the Imaging Data Commons (IDC). Use when querying medical imaging metadata, searching for DICOM series, analyzing imaging collections, or preparing datasets for download. Triggers include queries about CT/MR/PET scans, cancer imaging studies, DICOM data, or IDC collections.
+description: This skill should be used when exploring cancer imaging data from the Imaging Data Commons (IDC). Use when the user explicitly mentions IDC, Imaging Data Commons, or IDC collections. Do not trigger on general medical imaging queries unless IDC is specifically referenced.
 metadata:
   version: 0.2.1
   repository: https://github.com/mhalle/idc-skill
