@@ -1,6 +1,43 @@
 # idc-skill
 
-A skill for exploring cancer imaging data from the Imaging Data Commons (IDC).
+A skill for exploring cancer imaging data from the [Imaging Data Commons (IDC)](https://portal.imaging.datacommons.cancer.gov/), a cloud-based repository of publicly available cancer imaging data.
+
+## About IDC
+
+The Imaging Data Commons is an NCI Cancer Research Data Commons resource providing access to:
+- **965,000+ DICOM series** across **161 collections**
+- Cancer imaging from major research initiatives (TCGA, NLST, LIDC-IDRI, and more)
+- Multiple modalities: CT, MRI, PET, pathology slides, and derived analysis results
+- Clinical, genomic, and histopathology supporting data
+
+### IDC Resources
+
+- [IDC Portal](https://portal.imaging.datacommons.cancer.gov/) - Browse and explore collections
+- [IDC Documentation](https://learn.canceridc.dev/) - Tutorials and guides
+- [IDC GitHub](https://github.com/ImagingDataCommons) - Tools and code
+- [idc-index Python Package](https://pypi.org/project/idc-index/) - Programmatic access to IDC data
+
+## Features
+
+This skill enables Claude to:
+
+- **Browse collections** - Search and filter 161 imaging collections by cancer type, body location, species, or keywords
+- **Query imaging metadata** - Find specific DICOM series by modality, body part, size, or clinical criteria
+- **Generate download scripts** - Create ready-to-run Python scripts for downloading DICOM data
+- **Analyze DICOM files** - Read and interpret DICOM metadata and pixel data
+- **Work in restricted environments** - Adapts workflows for environments with limited network access
+
+## Example Queries
+
+Once installed, you can ask questions like:
+
+- "What lung cancer imaging collections are available in IDC?"
+- "Find brain MRI datasets with fewer than 50 subjects"
+- "Show me collections that include both CT scans and genomic data"
+- "Help me download chest CT scans under 100MB for analysis"
+- "What modalities are available in the TCGA-LUAD collection?"
+- "Find collections with mouse imaging data"
+- "Search IDC for breast cancer screening studies"
 
 ## Installation
 
