@@ -308,11 +308,22 @@ client.fetch_index('clinical_index')
 **Issue:** Can't find specific imaging modality
 - **Solution:** Check `references/schema_reference.md` for modality codes (SR, CT, SEG, MR, etc.)
 
+## Checking for Updates
+
+This skill's version is in the frontmatter metadata (`metadata.version`). To check for updates, compare against the latest GitHub release tag from `https://api.github.com/repos/mhalle/idc-skill/releases/latest`.
+
+If outdated, offer to download the latest `.skill` file and present it to the user as an output file for reinstallation.
+
+**Note:** This update workflow is Claude-specific. Other agents may use different conventions.
+
+See `references/updating.md` for detailed update procedures.
+
 ## Resources
 
 ### references/
 
 - `schema_reference.md` - Complete schema documentation for both index tables
 - `query_patterns.md` - Comprehensive SQL query examples for common tasks
+- `updating.md` - Instructions for checking and applying skill updates
 
 Load these references when detailed information is needed for schema understanding or query construction.
