@@ -292,6 +292,31 @@ client.fetch_index('clinical_index')
 
 **Note:** These operations fail in restricted environments with 403 or S3 errors.
 
+## Collections Database
+
+The skill includes a pre-built SQLite database of IDC collection metadata at `assets/idc_collections.db`. Use this for fast local lookups of collection information without API calls.
+
+### Quick Lookup
+
+```sql
+-- Find collections by cancer type
+SELECT collection_id, cancer_type, subject_count
+FROM collections
+WHERE cancer_type LIKE '%Lung%';
+
+-- Full-text search across all fields
+SELECT collection_id, cancer_type, location
+FROM collections_fts
+WHERE collections_fts MATCH 'breast screening';
+```
+
+### When to Use
+
+- **Use the collections database** for browsing available collections, searching by cancer type/location, or getting collection descriptions
+- **Use `idc-index`** for detailed series-level queries, downloading DICOM data, or accessing the full imaging index
+
+See `references/collections_database.md` for complete schema and query examples.
+
 ## Best Practices
 
 1. **Detect environment early** - Try a simple operation to determine restrictions
@@ -337,6 +362,11 @@ See `references/updating.md` for detailed update procedures.
 
 - `schema_reference.md` - Complete schema documentation for both index tables
 - `query_patterns.md` - Comprehensive SQL query examples for common tasks
+- `collections_database.md` - Schema and queries for the local collections database
 - `updating.md` - Instructions for checking and applying skill updates
+
+### assets/
+
+- `idc_collections.db` - Pre-built SQLite database of IDC collection metadata
 
 Load these references when detailed information is needed for schema understanding or query construction.

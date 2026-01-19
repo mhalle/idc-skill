@@ -68,7 +68,9 @@ You can also invoke it directly with `/idc-skill`.
 - [SKILL.md](SKILL.md) - Main skill instructions and workflows
 - [references/schema_reference.md](references/schema_reference.md) - Database schema documentation
 - [references/query_patterns.md](references/query_patterns.md) - SQL query examples
+- [references/collections_database.md](references/collections_database.md) - Local collections database schema and queries
 - [references/updating.md](references/updating.md) - Detailed update procedures for different platforms
+- [assets/idc_collections.db](assets/idc_collections.db) - Pre-built SQLite database of IDC collection metadata
 
 ## Developer
 
@@ -87,3 +89,15 @@ When releasing:
    ```
 
 The GitHub Actions workflow will automatically package and publish the `.skill` files when a tag is pushed.
+
+### Rebuilding the Collections Database
+
+The `assets/idc_collections.db` database is built from the IDC API. Rebuild it periodically to pick up new collections:
+
+```bash
+uv run scripts/utils/build_collections_db.py assets/idc_collections.db
+```
+
+The API endpoint is slow (30-60 seconds). The script is idempotent and will replace any existing database. Commit the updated database after rebuilding.
+
+See [scripts/utils/README.md](scripts/utils/README.md) for more details.
