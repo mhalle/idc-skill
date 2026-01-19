@@ -7,14 +7,10 @@ A skill for exploring cancer imaging data from the Imaging Data Commons (IDC).
 ### Download from GitHub Releases
 
 The latest release is always available at:
-```
-https://github.com/mhalle/idc-skill/releases/latest/download/idc-skill.skill
-```
+[https://github.com/mhalle/idc-skill/releases/latest/download/idc-skill.skill](https://github.com/mhalle/idc-skill/releases/latest/download/idc-skill.skill)
 
-Versioned releases are also available:
-```
-https://github.com/mhalle/idc-skill/releases/download/v0.1.0/idc-skill-v0.1.0.skill
-```
+All versioned releases can be found at:
+[https://github.com/mhalle/idc-skill/releases](https://github.com/mhalle/idc-skill/releases)
 
 ### Claude Code
 
@@ -22,14 +18,14 @@ Download and extract to your `.claude/skills/` directory:
 
 **Project-level** (applies to a specific project):
 ```bash
-curl -L https://github.com/mhalle/idc-skill/releases/latest/download/idc-skill.skill -o idc-skill.zip
-unzip idc-skill.zip -d /path/to/your/project/.claude/skills/
+curl -LO https://github.com/mhalle/idc-skill/releases/latest/download/idc-skill.skill
+unzip idc-skill.skill -d /path/to/your/project/.claude/skills/
 ```
 
 **User-level** (applies globally):
 ```bash
-curl -L https://github.com/mhalle/idc-skill/releases/latest/download/idc-skill.skill -o idc-skill.zip
-unzip idc-skill.zip -d ~/.claude/skills/
+curl -LO https://github.com/mhalle/idc-skill/releases/latest/download/idc-skill.skill
+unzip idc-skill.skill -d ~/.claude/skills/
 ```
 
 Or clone the repository directly:
