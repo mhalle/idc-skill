@@ -312,8 +312,18 @@ WHERE collections_fts MATCH 'breast screening';
 
 ### When to Use
 
-- **Use the collections database** for browsing available collections, searching by cancer type/location, or getting collection descriptions
-- **Use `idc-index`** for detailed series-level queries, downloading DICOM data, or accessing the full imaging index
+**Always check the collections database first** before loading the `idc-index` module. The collections database is lightweight and fast, while `idc-index` is a large module that takes time to load.
+
+- **Use the collections database** for:
+  - Browsing available collections
+  - Searching by cancer type, location, or keywords
+  - Getting collection descriptions and metadata
+  - Answering questions about what data IDC contains
+
+- **Use `idc-index`** only when you need:
+  - Series-level queries (individual DICOM series)
+  - Downloading DICOM data
+  - Access to the full imaging index with 965K+ series
 
 See `references/collections_database.md` for complete schema and query examples.
 
