@@ -1,0 +1,37 @@
+name: Package Skill
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Package skill
+        run: |
+          # Create a temp directory with the skill contents
+          mkdir -p build/idc-skill
+          cp -r SKILL.md README.md references build/idc-skill/
+
+          # Create versioned package
+          cd build
+          zip -r ../idc-skill-${{ steps.version.outputs.VERSION }}.skill idc-skill
+
+          # Create unversioned package
+          zip -r ../idc-skill.skill idc-skill
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            idc-skill-${{ steps.version.outputs.VERSION }}.skill
+            idc-skill.skill
