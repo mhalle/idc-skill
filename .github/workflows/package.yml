@@ -23,7 +23,7 @@ jobs:
         run: |
           # Create a temp directory with the skill contents
           mkdir -p build/idc-skill
-          cp -r SKILL.md README.md references build/idc-skill/
+          cp -r SKILL.md README.md references assets build/idc-skill/
 
           # Create versioned package
           cd build
