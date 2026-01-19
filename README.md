@@ -65,10 +65,10 @@ You can also invoke it directly with `/idc-skill`.
 
 ## Contents
 
-- `SKILL.md` - Main skill instructions and workflows
-- `references/schema_reference.md` - Database schema documentation
-- `references/query_patterns.md` - SQL query examples
-- `references/updating.md` - Detailed update procedures for different platforms
+- [SKILL.md](SKILL.md) - Main skill instructions and workflows
+- [references/schema_reference.md](references/schema_reference.md) - Database schema documentation
+- [references/query_patterns.md](references/query_patterns.md) - SQL query examples
+- [references/updating.md](references/updating.md) - Detailed update procedures for different platforms
 
 ## Developer
 
