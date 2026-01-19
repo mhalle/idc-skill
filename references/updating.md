@@ -16,14 +16,16 @@ metadata:
 
 To check if a newer version is available:
 
-1. Fetch the latest release information from GitHub:
-   ```
-   https://api.github.com/repos/mhalle/idc-skill/releases/latest
-   ```
+**Recommended approach:** Use bash with curl to query the GitHub API directly:
+```bash
+curl -s https://api.github.com/repos/mhalle/idc-skill/releases/latest
+```
 
-2. Parse the `tag_name` field from the response (e.g., `v0.2.0`)
+Parse the JSON response to extract the `tag_name` field (e.g., `v0.2.0`) and compare against the installed `metadata.version` (strip the `v` prefix for comparison).
 
-3. Compare against the installed `metadata.version` (strip the `v` prefix for comparison)
+**Alternative approaches** (less reliable in restricted environments):
+- `web_search` may not find the specific repository
+- `web_fetch` requires the URL from search results or user input first
 
 ## Updating on Claude Platform
 
