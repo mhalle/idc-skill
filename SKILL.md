@@ -32,32 +32,45 @@ Detect the operating environment early to choose the appropriate workflow:
 
 ## Quick Start
 
-### Initial Setup
+### Running Scripts with uv (Recommended)
 
-Install and initialize the IDC client:
+Use `uv run` with PEP723 inline dependency specifications. This automatically handles package installation without polluting the global environment.
 
-```python
-# Install uv for package management
+First, ensure uv is installed:
+```bash
 pip install uv --break-system-packages
+```
 
-# For scripts, use PEP723 inline dependency specifications
+Then create scripts with inline dependencies:
+```python
 # /// script
 # dependencies = [
-#   "idc-index==0.10.2",
+#   "idc-index",
 #   "pydicom"
 # ]
 # ///
-```
 
-Verify version compatibility:
-
-```python
-import importlib.metadata
 from idc_index import IDCClient
 
-installed_version = importlib.metadata.version('idc-index')
-print(f"Installed: {installed_version}")
-# Documented version: 0.10.2
+client = IDCClient()
+# ... your code here
+```
+
+Run the script with:
+```bash
+uv run script.py
+```
+
+### Fallback: Install with pip
+
+If uv is not available, install packages directly:
+```bash
+pip install idc-index pydicom --break-system-packages
+```
+
+Then run Python normally:
+```python
+from idc_index import IDCClient
 
 client = IDCClient()
 ```
@@ -148,7 +161,7 @@ Create a standalone Python script with PEP723 dependencies:
 ```python
 # /// script
 # dependencies = [
-#   "idc-index==0.10.2",
+#   "idc-index",
 # ]
 # ///
 
@@ -282,7 +295,7 @@ client.fetch_index('clinical_index')
 ## Best Practices
 
 1. **Detect environment early** - Try a simple operation to determine restrictions
-2. **Verify version compatibility** - Check installed version matches 0.10.2
+2. **Use latest idc-index** - Keep the package updated for new features and bug fixes
 3. **Start with small queries** - Use `LIMIT 10` to understand data structure
 4. **Check series_size_MB** - Prefer <100MB for testing, <30MB for quick downloads
 5. **Inspect null counts** - Many clinical fields have significant nulls (see schema reference)
