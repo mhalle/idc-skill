@@ -2,7 +2,7 @@
 name: idc-skill
 description: This skill should be used when exploring cancer imaging data from the Imaging Data Commons (IDC). Use when the user explicitly mentions IDC, Imaging Data Commons, or IDC collections. Do not trigger on general medical imaging queries unless IDC is specifically referenced.
 metadata:
-  version: 0.2.9
+  version: 0.3.0
   repository: https://github.com/mhalle/idc-skill
 ---
 
@@ -23,6 +23,27 @@ This skill enables exploration and analysis of cancer imaging data from the Imag
 | **BigQuery** | Yes (GCP) | Full DICOM metadata, complex joins | Pay per query |
 
 **Default choice:** Use `idc-index` for most tasks. It requires no authentication, handles downloads efficiently, and covers the vast majority of use cases. Only consider BigQuery or DICOMweb for specialized needs not met by idc-index.
+
+## IDC Data Model
+
+IDC adds grouping levels above the standard DICOM hierarchy:
+
+```
+collection_id → PatientID → StudyInstanceUID → SeriesInstanceUID → SOPInstanceUID
+```
+
+| Identifier | Scope | Use For |
+|------------|-------|---------|
+| `collection_id` | Dataset grouping | Filtering by project/disease |
+| `analysis_result_id` | Derived data grouping | Finding segmentations/annotations |
+| `PatientID` | Patient | Grouping images by subject |
+| `StudyInstanceUID` | DICOM study | Visualization, grouping series |
+| `SeriesInstanceUID` | DICOM series | Downloads, queries |
+
+- **collection_id**: Groups patients by disease, modality, or research focus (e.g., `tcga_luad`, `nlst`)
+- **analysis_result_id**: Identifies derived objects (segmentations, annotations) across collections
+
+See `references/index_tables.md` for complete table documentation and join patterns.
 
 ## Environment Detection
 
@@ -172,50 +193,23 @@ Create a standalone Python script with PEP723 dependencies:
 
 ```python
 # /// script
-# dependencies = [
-#   "idc-index",
-# ]
+# dependencies = ["idc-index"]
 # ///
-
 from idc_index import IDCClient
-import zipfile
-from pathlib import Path
 
-# Series UIDs from query
-series_uids = [
-    "1.2.276.0.7230010.3.1.4.8323329.5323.1517875193.899377",
-    # ... additional UIDs
-]
+series_uids = ["1.2.276...", "1.2.277..."]  # UIDs from query
 
 client = IDCClient()
-download_dir = Path("idc_downloads")
-download_dir.mkdir(exist_ok=True)
-
-# Download each series
-for uid in series_uids:
-    print(f"Downloading {uid}...")
-    client.download_dicom_series(
-        uid, 
-        downloadDir=str(download_dir),
-        show_progress_bar=True,
-        quiet=False
-    )
-
-# Create zip file
-output_zip = "idc_data.zip"
-with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
-    for file_path in download_dir.rglob('*'):
-        if file_path.is_file():
-            zipf.write(file_path, file_path.relative_to(download_dir.parent))
-
-print(f"Created {output_zip}")
+client.download_from_selection(
+    seriesInstanceUID=series_uids,
+    downloadDir="./idc_downloads"
+)
+print("Download complete")
 ```
 
 **Step 3: User execution and upload**
-- User saves script and runs in unrestricted environment
-- Script downloads DICOM files and creates zip
-- User uploads zip file
-- Extract and analyze: `unzip idc_data.zip -d /home/claude/dicom_data/`
+- User saves script and runs with `uv run script.py`
+- User uploads downloaded files or zips them first
 
 ### Workflow 3: Direct Download (Unrestricted Environment)
 
@@ -226,22 +220,27 @@ from idc_index import IDCClient
 
 client = IDCClient()
 
-# Download series directly
-client.download_dicom_series(
-    "1.2.276.0.7230010.3.1.4.8323329.5323.1517875193.899377",
-    downloadDir="/home/claude/downloads",
-    show_progress_bar=True
+# Download specific series
+client.download_from_selection(
+    seriesInstanceUID=["1.2.276.0.7230010.3.1.4.8323329.5323.1517875193.899377"],
+    downloadDir="./downloads"
 )
 
-# Fetch additional indices
-client.fetch_index('clinical_index')
-clinical_data = client.get_clinical_table('tcga_luad')
+# Download entire collection
+client.download_from_selection(
+    collection_id="rider_pilot",
+    downloadDir="./data/rider"
+)
 
-# Analyze immediately
-import pydicom
-dcm = pydicom.dcmread('/home/claude/downloads/file.dcm')
-print(dcm.PatientID, dcm.StudyDate)
+# Custom directory structure
+client.download_from_selection(
+    collection_id="tcga_luad",
+    downloadDir="./data",
+    dirTemplate="%collection_id/%PatientID/%Modality"
+)
 ```
+
+See `references/downloads.md` for CLI commands, manifest files, and batch downloads.
 
 ### Workflow 4: Analyze DICOM Files
 
@@ -319,24 +318,21 @@ Reference the `references/schema_reference.md` file for detailed information on:
 
 ## Additional Indices
 
-In unrestricted environments, fetch optional indices:
+Beyond the auto-loaded `index` and `prior_versions_index`, fetch optional indices as needed:
 
 ```python
-# Slide Microscopy series index
-client.fetch_index('sm_index')
-# Access: client.sm_index
-
-# Slide Microscopy instance-level index
-client.fetch_index('sm_instance_index')
-# Access: client.sm_instance_index
-
-# Clinical data index
-client.fetch_index('clinical_index')
-# Access: client.clinical_index
-# Get collection data: client.get_clinical_table('collection_id')
+client.fetch_index('collections_index')   # Collection metadata
+client.fetch_index('analysis_results_index')  # Derived datasets
+client.fetch_index('seg_index')           # Segmentation details
+client.fetch_index('sm_index')            # Slide microscopy
+client.fetch_index('clinical_index')      # Clinical data
 ```
 
-**Note:** These operations fail in restricted environments with 403 or S3 errors.
+Use `client.indices_overview` for authoritative schema information.
+
+**Note:** Fetch operations fail in restricted environments with 403 or S3 errors.
+
+See `references/index_tables.md` for complete documentation, join patterns, and examples.
 
 ## Advanced: BigQuery Access
 
@@ -425,7 +421,7 @@ See `references/collections_database.md` for complete schema and query examples.
 3. **Start with small queries** - Use `LIMIT 10` to understand data structure
 4. **Check series_size_MB** - Prefer <100MB for testing, <30MB for quick downloads
 5. **Inspect null counts** - Many clinical fields have significant nulls (see schema reference)
-6. **Use citations** - Always cite data sources: `client.citations_from_selection()`
+6. **Use citations** - Generate citations with `client.citations_from_selection()` (see `references/licenses_citations.md`)
 7. **Verify licenses** - Check `license_short_name` column before use
 8. **Mind large collections** - NLST has 587,799 series (60% of all data)
 9. **Generate scripts thoughtfully** - In restricted environments, create clear, documented scripts for users
@@ -466,6 +462,10 @@ See `references/updating.md` for detailed update procedures.
 - `query_patterns.md` - Comprehensive SQL query examples for common tasks
 - `collections_database.md` - Schema and queries for the local collections database
 - `updating.md` - Instructions for checking and applying skill updates
+- `index_tables.md` - All 8 index tables, join patterns, and schema discovery
+- `downloads.md` - Download API, CLI commands, templates, and manifests
+- `licenses_citations.md` - License types, queries, and citation generation
+- `segmentations.md` - Finding and using segmentations and annotations
 - `bigquery_guide.md` - Advanced BigQuery access for full DICOM metadata
 - `dicomweb_guide.md` - DICOMweb API access for PACS integration and streaming
 - `viewers_guide.md` - Browser-based visualization with OHIF and SLIM viewers

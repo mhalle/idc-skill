@@ -108,6 +108,10 @@ You can also invoke it directly with `/idc-skill`.
 - [references/query_patterns.md](references/query_patterns.md) - SQL query examples
 - [references/collections_database.md](references/collections_database.md) - Local collections database schema and queries
 - [references/updating.md](references/updating.md) - Detailed update procedures for different platforms
+- [references/index_tables.md](references/index_tables.md) - All 8 index tables, joins, and schema discovery
+- [references/downloads.md](references/downloads.md) - Download API, CLI, templates, and manifests
+- [references/licenses_citations.md](references/licenses_citations.md) - License checking and citation generation
+- [references/segmentations.md](references/segmentations.md) - Finding segmentations and annotations
 - [references/bigquery_guide.md](references/bigquery_guide.md) - Advanced BigQuery access for full DICOM metadata
 - [references/dicomweb_guide.md](references/dicomweb_guide.md) - DICOMweb API access for PACS integration
 - [references/viewers_guide.md](references/viewers_guide.md) - Browser-based OHIF/SLIM viewer usage
