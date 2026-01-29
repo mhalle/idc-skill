@@ -12,6 +12,18 @@ metadata:
 
 This skill enables exploration and analysis of cancer imaging data from the Imaging Data Commons (IDC) using the idc-index Python package. The skill handles querying 965,407 DICOM series across 161 collections, identifying relevant datasets, and managing workflows for both restricted (LLM built-in) and unrestricted (Claude Code, local) environments.
 
+## Data Access Methods
+
+| Method | Auth Required | Best For | Cost |
+|--------|---------------|----------|------|
+| **idc-index** | No | Queries, downloads, most tasks | Free |
+| **IDC Portal** | No | Interactive exploration | Free |
+| **Viewers (OHIF/SLIM)** | No | Quick visualization | Free |
+| **DICOMweb** | No (proxy) | PACS integration, streaming | Free |
+| **BigQuery** | Yes (GCP) | Full DICOM metadata, complex joins | Pay per query |
+
+**Default choice:** Use `idc-index` for most tasks. It requires no authentication, handles downloads efficiently, and covers the vast majority of use cases. Only consider BigQuery or DICOMweb for specialized needs not met by idc-index.
+
 ## Environment Detection
 
 Detect the operating environment early to choose the appropriate workflow:
@@ -253,6 +265,40 @@ if hasattr(dcm, 'pixel_array'):
     print(f"Image shape: {pixels.shape}")
 ```
 
+### Workflow 5: Visualize in Browser
+
+Preview imaging data without downloading using OHIF and SLIM viewers:
+
+```python
+from idc_index import IDCClient
+import webbrowser
+
+client = IDCClient()
+
+# Find series to visualize
+df = client.sql_query("""
+    SELECT SeriesInstanceUID, StudyInstanceUID, Modality,
+           collection_id, BodyPartExamined
+    FROM index
+    WHERE Modality = 'CT'
+    AND BodyPartExamined = 'CHEST'
+    LIMIT 3
+""")
+
+# Generate viewer URLs using get_viewer_URL() (auto-selects OHIF or SLIM)
+for _, row in df.iterrows():
+    viewer_url = client.get_viewer_URL(seriesInstanceUID=row['SeriesInstanceUID'])
+    print(f"Collection: {row['collection_id']}")
+    print(f"  {viewer_url}")
+    # webbrowser.open(viewer_url)  # Uncomment to open
+```
+
+The `get_viewer_URL()` method automatically selects the appropriate viewer:
+- **OHIF Viewer** for radiology (CT, MR, PET, X-ray)
+- **SLIM Viewer** for slide microscopy (SM)
+
+See `references/viewers_guide.md` for detailed viewer usage.
+
 ## Common Query Patterns
 
 Reference the `references/query_patterns.md` file for comprehensive SQL query examples including:
@@ -291,6 +337,51 @@ client.fetch_index('clinical_index')
 ```
 
 **Note:** These operations fail in restricted environments with 403 or S3 errors.
+
+## Advanced: BigQuery Access
+
+**Important:** BigQuery is an advanced technique. Try `idc-index` queries first—they cover most use cases without authentication or cost.
+
+### When BigQuery May Be Needed
+
+Only consider BigQuery when `idc-index` cannot provide the data you need:
+- Full DICOM metadata (all 4000+ tags vs ~50 in idc-index)
+- Complex joins with clinical data tables
+- DICOM sequence attributes (nested structures)
+- Fields not available in the idc-index mini-index
+
+### Requirements and Costs
+
+| Requirement | Details |
+|-------------|---------|
+| GCP Account | Required with billing enabled |
+| Authentication | `gcloud auth application-default login` |
+| Cost | First 1 TB/month free, then ~$5/TB scanned |
+
+### Quick Reference
+
+```python
+# Requires: pip install google-cloud-bigquery
+# Auth: gcloud auth application-default login
+from google.cloud import bigquery
+
+client = bigquery.Client(project="your-gcp-project-id")
+
+query = """
+SELECT SeriesInstanceUID, SliceThickness, PixelSpacing
+FROM `bigquery-public-data.idc_current.dicom_all`
+WHERE collection_id = 'tcga_luad' AND Modality = 'CT'
+LIMIT 10
+"""
+df = client.query(query).to_dataframe()
+```
+
+**Key datasets:**
+- `bigquery-public-data.idc_current.*` - Latest version
+- `bigquery-public-data.idc_v{N}.*` - Versioned (for reproducibility)
+- `bigquery-public-data.idc_current_clinical.*` - Clinical data
+
+See `references/bigquery_guide.md` for detailed setup, query patterns, and cost optimization.
 
 ## Collections Database
 
@@ -338,6 +429,7 @@ See `references/collections_database.md` for complete schema and query examples.
 7. **Verify licenses** - Check `license_short_name` column before use
 8. **Mind large collections** - NLST has 587,799 series (60% of all data)
 9. **Generate scripts thoughtfully** - In restricted environments, create clear, documented scripts for users
+10. **Use viewers for quick preview** - Generate OHIF/SLIM viewer URLs before downloading for visual inspection
 
 ## Common Issues
 
@@ -374,6 +466,9 @@ See `references/updating.md` for detailed update procedures.
 - `query_patterns.md` - Comprehensive SQL query examples for common tasks
 - `collections_database.md` - Schema and queries for the local collections database
 - `updating.md` - Instructions for checking and applying skill updates
+- `bigquery_guide.md` - Advanced BigQuery access for full DICOM metadata
+- `dicomweb_guide.md` - DICOMweb API access for PACS integration and streaming
+- `viewers_guide.md` - Browser-based visualization with OHIF and SLIM viewers
 
 ### assets/
 

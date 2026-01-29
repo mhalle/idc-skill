@@ -25,6 +25,7 @@ This skill enables Claude to:
 - **Query imaging metadata** - Find specific DICOM series by modality, body part, size, or clinical criteria
 - **Generate download scripts** - Create ready-to-run Python scripts for downloading DICOM data
 - **Analyze DICOM files** - Read and interpret DICOM metadata and pixel data
+- **Visualize data** - Preview imaging in OHIF/SLIM viewers without downloads
 - **Work in restricted environments** - Adapts workflows for environments with limited network access
 
 ## Example Queries
@@ -107,6 +108,9 @@ You can also invoke it directly with `/idc-skill`.
 - [references/query_patterns.md](references/query_patterns.md) - SQL query examples
 - [references/collections_database.md](references/collections_database.md) - Local collections database schema and queries
 - [references/updating.md](references/updating.md) - Detailed update procedures for different platforms
+- [references/bigquery_guide.md](references/bigquery_guide.md) - Advanced BigQuery access for full DICOM metadata
+- [references/dicomweb_guide.md](references/dicomweb_guide.md) - DICOMweb API access for PACS integration
+- [references/viewers_guide.md](references/viewers_guide.md) - Browser-based OHIF/SLIM viewer usage
 - [assets/idc_collections.db](assets/idc_collections.db) - Pre-built SQLite database of IDC collection metadata
 
 ## Developer
