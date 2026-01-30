@@ -20,7 +20,7 @@ from pathlib import Path
 import httpx
 import markdownify
 
-API_URL = "https://api.imaging.datacommons.cancer.gov/v1/collections"
+API_URL = "https://api.imaging.datacommons.cancer.gov/v2/collections"
 DEFAULT_OUTPUT = "idc_collections.db"
 SCHEMA_VERSION = 1
 
