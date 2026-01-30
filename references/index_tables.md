@@ -164,13 +164,113 @@ Most common columns (use `indices_overview` for complete list):
 
 ## Clinical Data Access
 
+Clinical data is available for select collections. Not all collections have clinical data.
+
+### Discovering Available Clinical Data
+
 ```python
 # Fetch clinical index (downloads clinical tables)
 client.fetch_index("clinical_index")
 
-# Find available tables and columns
-tables = client.sql_query("SELECT DISTINCT table_name, column_label FROM clinical_index")
+# List collections with clinical data
+collections_with_clinical = client.sql_query("""
+    SELECT DISTINCT collection_id, COUNT(DISTINCT table_name) as tables
+    FROM clinical_index
+    GROUP BY collection_id
+    ORDER BY tables DESC
+""")
 
-# Load a specific clinical table
-clinical_df = client.get_clinical_table("tcga_luad")
+# Find tables and columns for a specific collection
+tcga_tables = client.sql_query("""
+    SELECT table_name, column_label, column_description
+    FROM clinical_index
+    WHERE collection_id = 'tcga_luad'
+    ORDER BY table_name, column_label
+""")
 ```
+
+### Loading Clinical Tables
+
+```python
+# Load a specific clinical table as DataFrame
+clinical_df = client.get_clinical_table("tcga_luad_clinical")
+
+# Common clinical table naming patterns:
+# - {collection}_clinical (main clinical data)
+# - {collection}_biospecimen (sample info)
+# - {collection}_followup (longitudinal data)
+```
+
+### Joining Clinical with Imaging Data
+
+```python
+# Method 1: Filter imaging by patients with clinical data
+result = client.sql_query("""
+    SELECT i.PatientID, i.SeriesInstanceUID, i.Modality, i.SeriesDescription
+    FROM index i
+    WHERE i.collection_id = 'tcga_luad'
+    AND i.PatientID IN (
+        SELECT DISTINCT dicom_patient_id FROM tcga_luad_clinical
+    )
+    LIMIT 20
+""")
+
+# Method 2: Load both and merge in pandas
+import pandas as pd
+
+imaging_df = client.sql_query("""
+    SELECT PatientID, SeriesInstanceUID, Modality
+    FROM index WHERE collection_id = 'tcga_luad'
+""")
+clinical_df = client.get_clinical_table("tcga_luad_clinical")
+
+# Clinical tables use 'dicom_patient_id' to match 'PatientID'
+merged = imaging_df.merge(
+    clinical_df,
+    left_on='PatientID',
+    right_on='dicom_patient_id'
+)
+```
+
+### Common Clinical Columns
+
+Clinical table schemas vary by collection. Check column names with:
+
+```python
+# Get all columns for a collection's clinical data
+cols = client.sql_query("""
+    SELECT column_label, column_description
+    FROM clinical_index
+    WHERE table_name = 'tcga_luad_clinical'
+""")
+```
+
+Common columns include:
+- `dicom_patient_id` - Links to imaging PatientID
+- `age_at_diagnosis` - Patient age
+- `gender` or `sex` - Patient sex
+- `pathologic_stage` - Cancer staging
+- `vital_status` - Alive/deceased
+- `days_to_death` or `days_to_last_followup` - Survival data
+
+### BigQuery Clinical Data
+
+For more complex clinical queries, BigQuery provides direct access:
+
+```sql
+-- BigQuery: Join imaging with clinical
+SELECT
+    d.PatientID,
+    d.SeriesInstanceUID,
+    d.Modality,
+    c.age_at_diagnosis,
+    c.pathologic_stage
+FROM `bigquery-public-data.idc_current.dicom_all` d
+JOIN `bigquery-public-data.idc_current_clinical.tcga_luad_clinical` c
+    ON d.PatientID = c.dicom_patient_id
+WHERE d.collection_id = 'tcga_luad'
+    AND d.Modality = 'CT'
+LIMIT 20
+```
+
+**Note:** BigQuery clinical tables are in `idc_current_clinical` dataset.

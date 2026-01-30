@@ -10,7 +10,20 @@ metadata:
 
 ## Overview
 
-This skill enables exploration and analysis of cancer imaging data from the Imaging Data Commons (IDC) using the idc-index Python package. The skill handles querying 965,407 DICOM series across 161 collections, identifying relevant datasets, and managing workflows for both restricted (LLM built-in) and unrestricted (Claude Code, local) environments.
+This skill enables exploration and analysis of cancer imaging data from the Imaging Data Commons (IDC) using the idc-index Python package. IDC contains hundreds of thousands of DICOM series across 160+ collections—query for current stats:
+
+```python
+from idc_index import IDCClient
+client = IDCClient()
+stats = client.sql_query("""
+    SELECT COUNT(DISTINCT collection_id) as collections,
+           COUNT(*) as series,
+           ROUND(SUM(series_size_MB)/1000, 1) as total_GB
+    FROM index
+""")
+```
+
+The skill handles identifying relevant datasets and managing workflows for both restricted (LLM built-in) and unrestricted (Claude Code, local) environments.
 
 ## Data Access Methods
 
@@ -132,9 +145,9 @@ df = client.sql_query("""
 Use SQL queries to find relevant imaging data:
 
 **Step 1: Understand the dataset structure**
-- 965,407 series across 161 collections
 - Two SQL-queryable tables: `index` (current data) and `prior_versions_index` (historical)
 - Key columns: SeriesInstanceUID (primary key), Modality, BodyPartExamined, series_size_MB
+- Use `client.get_idc_version()` to check data version
 
 **Step 2: Query for specific criteria**
 
@@ -244,25 +257,28 @@ See `references/downloads.md` for CLI commands, manifest files, and batch downlo
 
 ### Workflow 4: Analyze DICOM Files
 
-After obtaining DICOM files (via either workflow), analyze with pydicom:
+After obtaining DICOM files, analyze with pydicom or SimpleITK:
 
 ```python
 import pydicom
-from pathlib import Path
 
-# Read DICOM file
 dcm = pydicom.dcmread('path/to/file.dcm')
+print(f"Patient: {dcm.PatientID}, Modality: {dcm.Modality}")
 
-# Access metadata
-print(f"Patient ID: {dcm.PatientID}")
-print(f"Modality: {dcm.Modality}")
-print(f"Study Date: {dcm.StudyDate}")
-
-# Access pixel data (if available)
 if hasattr(dcm, 'pixel_array'):
     pixels = dcm.pixel_array
-    print(f"Image shape: {pixels.shape}")
 ```
+
+```python
+import SimpleITK as sitk
+
+reader = sitk.ImageSeriesReader()
+reader.SetFileNames(reader.GetGDCMSeriesFileNames("./ct_series"))
+image = reader.Execute()
+sitk.WriteImage(image, "volume.nii.gz")
+```
+
+See `references/analysis_pipelines.md` for 3D volume construction, radiomics, and pathology workflows.
 
 ### Workflow 5: Visualize in Browser
 
@@ -332,7 +348,18 @@ Use `client.indices_overview` for authoritative schema information.
 
 **Note:** Fetch operations fail in restricted environments with 403 or S3 errors.
 
-See `references/index_tables.md` for complete documentation, join patterns, and examples.
+### Clinical Data Access
+
+```python
+client.fetch_index("clinical_index")
+
+# Load clinical table (naming: {collection}_clinical)
+clinical_df = client.get_clinical_table("tcga_luad_clinical")
+
+# Join with imaging via dicom_patient_id column
+```
+
+See `references/index_tables.md` for clinical table discovery, join patterns, and BigQuery examples.
 
 ## Advanced: BigQuery Access
 
@@ -410,39 +437,28 @@ WHERE collections_fts MATCH 'breast screening';
 - **Use `idc-index`** only when you need:
   - Series-level queries (individual DICOM series)
   - Downloading DICOM data
-  - Access to the full imaging index with 965K+ series
+  - Access to the full imaging index
 
 See `references/collections_database.md` for complete schema and query examples.
 
 ## Best Practices
 
 1. **Detect environment early** - Try a simple operation to determine restrictions
-2. **Use latest idc-index** - Keep the package updated for new features and bug fixes
+2. **Use latest idc-index** - Keep the package updated (`pip install --upgrade idc-index`)
 3. **Start with small queries** - Use `LIMIT 10` to understand data structure
 4. **Check series_size_MB** - Prefer <100MB for testing, <30MB for quick downloads
-5. **Inspect null counts** - Many clinical fields have significant nulls (see schema reference)
-6. **Use citations** - Generate citations with `client.citations_from_selection()` (see `references/licenses_citations.md`)
-7. **Verify licenses** - Check `license_short_name` column before use
-8. **Mind large collections** - NLST has 587,799 series (60% of all data)
-9. **Generate scripts thoughtfully** - In restricted environments, create clear, documented scripts for users
-10. **Use viewers for quick preview** - Generate OHIF/SLIM viewer URLs before downloading for visual inspection
+5. **Use citations** - Generate with `client.citations_from_selection()` (see `references/licenses_citations.md`)
+6. **Verify licenses** - Check `license_short_name` column before use
+7. **Generate scripts thoughtfully** - In restricted environments, create clear scripts for users
+8. **Use viewers for quick preview** - Generate OHIF/SLIM URLs before downloading
 
 ## Common Issues
 
-**Issue:** Network operations fail (403 errors, s5cmd failures)
-- **Solution:** Recognize restricted environment, use three-step workflow
-
-**Issue:** SQL query fails
-- **Solution:** Verify table name is `index` or `prior_versions_index`, check DuckDB syntax
-
-**Issue:** Need clinical data but fetch_index fails
-- **Solution:** In restricted environment, inform user that clinical data requires unrestricted environment
-
-**Issue:** Large result sets overwhelming
-- **Solution:** Add LIMIT clauses, filter by series_size_MB, use aggregations first
-
-**Issue:** Can't find specific imaging modality
-- **Solution:** Check `references/schema_reference.md` for modality codes (SR, CT, SEG, MR, etc.)
+- **403/s5cmd errors**: Restricted environment - use three-step workflow
+- **SQL query fails**: Verify table name is `index` or `prior_versions_index`, check DuckDB syntax
+- **fetch_index fails**: In restricted environment, clinical data requires unrestricted access
+- **Large result sets**: Add LIMIT clauses, filter by series_size_MB, use aggregations
+- **Can't find modality**: Check `references/schema_reference.md` for modality codes
 
 ## Checking for Updates
 
@@ -466,6 +482,7 @@ See `references/updating.md` for detailed update procedures.
 - `downloads.md` - Download API, CLI commands, templates, and manifests
 - `licenses_citations.md` - License types, queries, and citation generation
 - `segmentations.md` - Finding and using segmentations and annotations
+- `analysis_pipelines.md` - Integration with pydicom, SimpleITK, and analysis workflows
 - `bigquery_guide.md` - Advanced BigQuery access for full DICOM metadata
 - `dicomweb_guide.md` - DICOMweb API access for PACS integration and streaming
 - `viewers_guide.md` - Browser-based visualization with OHIF and SLIM viewers

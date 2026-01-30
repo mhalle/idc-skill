@@ -5,7 +5,7 @@ A skill for exploring cancer imaging data from the [Imaging Data Commons (IDC)](
 ## About IDC
 
 The Imaging Data Commons is an NCI Cancer Research Data Commons resource providing access to:
-- **965,000+ DICOM series** across **160+ collections**
+- **Hundreds of thousands of DICOM series** across **160+ collections**
 - Cancer imaging from major research initiatives (TCGA, NLST, LIDC-IDRI, and more)
 - Multiple modalities: CT, MRI, PET, pathology slides, and derived analysis results
 - Clinical, genomic, and histopathology supporting data
@@ -21,7 +21,7 @@ The Imaging Data Commons is an NCI Cancer Research Data Commons resource providi
 
 This skill enables Claude to:
 
-- **Browse collections** - Search and filter 161 imaging collections by cancer type, body location, species, or keywords
+- **Browse collections** - Search and filter imaging collections by cancer type, body location, species, or keywords
 - **Query imaging metadata** - Find specific DICOM series by modality, body part, size, or clinical criteria
 - **Generate download scripts** - Create ready-to-run Python scripts for downloading DICOM data
 - **Analyze DICOM files** - Read and interpret DICOM metadata and pixel data
@@ -112,6 +112,7 @@ You can also invoke it directly with `/idc-skill`.
 - [references/downloads.md](references/downloads.md) - Download API, CLI, templates, and manifests
 - [references/licenses_citations.md](references/licenses_citations.md) - License checking and citation generation
 - [references/segmentations.md](references/segmentations.md) - Finding segmentations and annotations
+- [references/analysis_pipelines.md](references/analysis_pipelines.md) - Integration with pydicom, SimpleITK, and analysis workflows
 - [references/bigquery_guide.md](references/bigquery_guide.md) - Advanced BigQuery access for full DICOM metadata
 - [references/dicomweb_guide.md](references/dicomweb_guide.md) - DICOMweb API access for PACS integration
 - [references/viewers_guide.md](references/viewers_guide.md) - Browser-based OHIF/SLIM viewer usage
